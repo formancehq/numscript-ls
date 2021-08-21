@@ -3,3 +3,13 @@ test:
 
 bench:
 	go test -test.bench=. ./...
+
+build:
+	go build
+
+install:
+	go install
+
+build-vscode:
+	$(MAKE) -C editors/vscode build
+	

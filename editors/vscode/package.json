@@ -1,0 +1,68 @@
+{
+    "name": "numscript",
+    "displayName": "Numscript",
+    "description": "Language support for Numscript",
+    "version": "0.0.1",
+    "publisher": "numary",
+    "categories": [
+        "Programming Languages"
+    ],
+    "engines": {
+        "vscode": "^1.52.0"
+    },
+    "dependencies": {
+        "vscode-languageclient": "^7.0.0"
+    },
+    "devDependencies": {
+        "@types/vscode": "^1.52.0",
+        "@vscode/test-electron": "^1.6.1",
+        "@types/mocha": "^8.2.2",
+        "@types/node": "^12.12.0",
+        "@typescript-eslint/eslint-plugin": "^4.23.0",
+        "@typescript-eslint/parser": "^4.23.0",
+        "eslint": "^7.26.0",
+        "mocha": "^8.3.2",
+        "typescript": "^4.3.5"
+    },
+    "activationEvents": [
+        "onLanguage:numscript"
+    ],
+    "main": "./out/extension",
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -b",
+        "watch": "tsc -b -w"
+    },
+    "contributes": {
+        "languages": [
+            {
+                "id": "numscript",
+                "aliases": [
+                    "Numscript",
+                    "numscript"
+                ],
+                "extensions": [
+                    ".num"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "configuration": {
+            "type": "object",
+            "title": "Numscript",
+            "properties": {
+                "numscript.server-path": {
+                    "scope": "resource",
+                    "type": "string",
+                    "default": "/usr/bin/numscript-ls",
+                    "description": "Path to the language server binary."
+                }
+            }
+        },
+        "configurationDefaults": {
+            "[numscript]": {
+                "editor.semanticHighlighting.enabled": true
+            }
+        }
+    }
+}
