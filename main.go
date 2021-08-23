@@ -9,19 +9,38 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/antlr/antlr4/runtime/Go/antlr"
+	"github.com/numary/machine/script/compiler"
 	"github.com/numary/numscript-ls/lsp"
 	"github.com/sourcegraph/jsonrpc2"
 )
 
 type Server struct {
 	reader *textproto.Reader
-	files  map[lsp.DocumentURI]string
+	out    chan string
+	files  map[lsp.DocumentURI]Document
+}
+
+type Document struct {
+	content string
+	tokens  []antlr.Token
+	errors  []compiler.CompileError
 }
 
 func NewServer() Server {
+	out := make(chan string)
+
+	go func() {
+		for res := range out {
+			Debug("RESPONSE: " + res + "\n")
+			fmt.Printf("Content-Length: %v\r\n\r\n%v", len(res), res)
+		}
+	}()
+
 	return Server{
 		reader: textproto.NewReader(bufio.NewReader(os.Stdin)),
-		files:  make(map[lsp.DocumentURI]string),
+		out:    out,
+		files:  make(map[lsp.DocumentURI]Document),
 	}
 }
 
@@ -32,59 +51,83 @@ func Debug(format string, args ...interface{}) {
 func (s *Server) ReadRequest() jsonrpc2.Request {
 	mime_header, err := s.reader.ReadMIMEHeader()
 	if err != nil {
-		os.Stderr.WriteString("ERROR:\n")
-		os.Stderr.WriteString(err.Error())
+		if err.Error() == "EOF" {
+			os.Exit(0)
+		}
+		panic(err)
 	}
 
 	len, err := strconv.ParseInt(mime_header["Content-Length"][0], 10, 0)
 	if err != nil {
-		os.Stderr.WriteString("ERROR:\n")
-		os.Stderr.WriteString(err.Error())
+		panic(err)
 	}
 
 	buf := make([]byte, len)
 	_, err = io.ReadFull(s.reader.R, buf)
 	if err != nil {
-		os.Stderr.WriteString("ERROR:\n")
-		os.Stderr.WriteString(err.Error())
+		panic(err)
 	}
 
-	os.Stderr.WriteString("REQUEST: " + string(buf) + "\n")
+	Debug("REQUEST: " + string(buf) + "\n\n")
 
 	var req jsonrpc2.Request
 	req.UnmarshalJSON(buf)
 	return req
 }
 
-func (s *Server) SendResponse(res jsonrpc2.Response) {
-	res_s, err := res.MarshalJSON()
+func (s *Server) SendResponse(msg interface{}, id jsonrpc2.ID) {
+	res, err := json.Marshal(msg)
 	if err != nil {
-		os.Stderr.WriteString(fmt.Sprintf("unable to marshal JSON response: %v", err))
+		panic(err)
 	}
-	os.Stderr.WriteString("RESPONSE: " + string(res_s) + "\n")
+	res_raw := json.RawMessage(res)
+	rpc_res := jsonrpc2.Response{
+		ID:     id,
+		Result: &res_raw,
+		Error:  nil,
+		Meta:   nil,
+	}
+
+	res_s, err := rpc_res.MarshalJSON()
+	if err != nil {
+		panic(fmt.Errorf("unable to marshal JSON response: %v", err))
+	}
+	Debug("RESPONSE: " + string(res_s) + "\n")
+	fmt.Printf("Content-Length: %v\r\n\r\n%v", len(res_s), string(res_s))
+}
+
+func (s *Server) SendNotification(method string, params interface{}) {
+	params_json, err := json.Marshal(params)
+	if err != nil {
+		panic(err)
+	}
+	params_raw := json.RawMessage(params_json)
+	rpc_notif := jsonrpc2.Request{
+		Notif:  true,
+		Method: method,
+		Params: &params_raw,
+	}
+
+	res_s, err := rpc_notif.MarshalJSON()
+	if err != nil {
+		panic(fmt.Errorf("unable to marshal JSON response: %v", err))
+	}
+	Debug("RESPONSE: " + string(res_s) + "\n")
 	fmt.Printf("Content-Length: %v\r\n\r\n%v", len(res_s), string(res_s))
 }
 
 func (s *Server) Run() {
 	for {
 		req := s.ReadRequest()
+		if req.Method == "exit" {
+			break
+		}
 		if handler, ok := handlers[req.Method]; ok {
-			res, err := json.Marshal(handler(s, req.Params))
-			if err != nil {
-				panic(err)
-			}
-			if res != nil {
-				res_raw := json.RawMessage(res)
-				rpc_res := jsonrpc2.Response{
-					ID:     req.ID,
-					Result: &res_raw,
-					Error:  nil,
-					Meta:   nil,
-				}
-				s.SendResponse(rpc_res)
-			}
+			s.SendResponse(handler(s, req.Params), req.ID)
+		} else if handler, ok := notification_handlers[req.Method]; ok {
+			handler(s, req.Params)
 		} else {
-			os.Stderr.WriteString("unsupported method: " + req.Method + "\n")
+			Debug("unsupported method: " + req.Method + "\n")
 		}
 	}
 }

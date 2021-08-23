@@ -47,6 +47,21 @@
                 "configuration": "./language-configuration.json"
             }
         ],
+        "commands": [
+            {
+                "command": "numscript.restart-server",
+                "title": "Restart Server",
+                "category": "Numscript"
+            }
+        ],
+        "menus": {
+            "commandPalette": [
+                {
+                    "command": "numscript.restart-server",
+                    "when": "editorLangId == numscript"
+                }
+            ]
+        },
         "configuration": {
             "type": "object",
             "title": "Numscript",

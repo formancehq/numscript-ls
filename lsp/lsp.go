@@ -1,4 +1,5 @@
 // Taken from gopls internal lsp package
+// and fixed to make omitempty work
 
 // Copyright (c) 2009 The Go Authors. All rights reserved.
 
@@ -3600,7 +3601,7 @@ type ServerCapabilities struct {
 	/**
 	 * The server provides completion support.
 	 */
-	CompletionProvider CompletionOptions `json:"completionProvider,omitempty"`
+	CompletionProvider *CompletionOptions `json:"completionProvider,omitempty"`
 	/**
 	 * The server provides hover support.
 	 */
@@ -3608,7 +3609,7 @@ type ServerCapabilities struct {
 	/**
 	 * The server provides signature help support.
 	 */
-	SignatureHelpProvider SignatureHelpOptions `json:"signatureHelpProvider,omitempty"`
+	SignatureHelpProvider *SignatureHelpOptions `json:"signatureHelpProvider,omitempty"`
 	/**
 	 * The server provides Goto Declaration support.
 	 */
@@ -3646,11 +3647,11 @@ type ServerCapabilities struct {
 	/**
 	 * The server provides code lens.
 	 */
-	CodeLensProvider CodeLensOptions `json:"codeLensProvider,omitempty"`
+	CodeLensProvider *CodeLensOptions `json:"codeLensProvider,omitempty"`
 	/**
 	 * The server provides document link support.
 	 */
-	DocumentLinkProvider DocumentLinkOptions `json:"documentLinkProvider,omitempty"`
+	DocumentLinkProvider *DocumentLinkOptions `json:"documentLinkProvider,omitempty"`
 	/**
 	 * The server provides color provider support.
 	 */
@@ -3670,7 +3671,7 @@ type ServerCapabilities struct {
 	/**
 	 * The server provides document formatting on typing.
 	 */
-	DocumentOnTypeFormattingProvider DocumentOnTypeFormattingOptions `json:"documentOnTypeFormattingProvider,omitempty"`
+	DocumentOnTypeFormattingProvider *DocumentOnTypeFormattingOptions `json:"documentOnTypeFormattingProvider,omitempty"`
 	/**
 	 * The server provides rename support. RenameOptions may only be
 	 * specified if the client states that it supports
@@ -3688,7 +3689,7 @@ type ServerCapabilities struct {
 	/**
 	 * The server provides execute command support.
 	 */
-	ExecuteCommandProvider ExecuteCommandOptions `json:"executeCommandProvider,omitempty"`
+	ExecuteCommandProvider *ExecuteCommandOptions `json:"executeCommandProvider,omitempty"`
 	/**
 	 * The server provides call hierarchy support.
 	 *

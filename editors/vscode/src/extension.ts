@@ -1,19 +1,15 @@
 import * as path from 'path';
-import { workspace, ExtensionContext, window } from 'vscode';
+import * as vscode from 'vscode';
 
 import * as lc from 'vscode-languageclient/node';
 
-let dbg = window.createOutputChannel("NumscriptOut")
+let dbg = vscode.window.createOutputChannel("NumscriptOut")
 
 let client: lc.LanguageClient;
 
-export function activate(context: ExtensionContext) {
-  let serverPath: string = workspace.getConfiguration("numscript").get("server-path")
+export async function activate(ctx: vscode.ExtensionContext) {
+  let serverPath: string = vscode.workspace.getConfiguration("numscript").get("server-path")
   dbg.appendLine("Configured server path: " + serverPath)
-
-  // The debug options for the server
-  // --inspect=6009: runs the server in Node's Inspector mode so VS Code can attach to the server for debugging
-  let debugOptions = { execArgv: ['--nolazy', '--inspect=6009'] };
 
   let run: lc.Executable = {
     command: serverPath,
@@ -22,18 +18,12 @@ export function activate(context: ExtensionContext) {
 
   // If the extension is launched in debug mode then the debug server options are used
   // Otherwise the run options are used
-  let serverOptions: lc.ServerOptions = {
-    run: run,
-    debug: run
-  };
+  let serverOptions: lc.ServerOptions = { run: run, debug: run };
 
-  // Options to control the language client
   let clientOptions: lc.LanguageClientOptions = {
-    // Register the server for plain text documents
     documentSelector: [{ scheme: 'file', language: 'numscript' }],
     synchronize: {
-      // Notify the server about file changes to '.num files contained in the workspace
-      fileEvents: workspace.createFileSystemWatcher('**/.num')
+      fileEvents: vscode.workspace.createFileSystemWatcher('**/.num')
     }
   };
 
@@ -47,6 +37,16 @@ export function activate(context: ExtensionContext) {
 
   // Start the client. This will also launch the server
   client.start();
+
+  const restartHandler = () => {
+    dbg.appendLine("Requested server restart")
+    client.stop().then(() => {
+      dbg.appendLine("Restarting")
+      client.start()
+    })
+  }
+
+  ctx.subscriptions.push(vscode.commands.registerCommand("numscript.restart-server", restartHandler))
 }
 
 export function deactivate(): Thenable<void> | undefined {

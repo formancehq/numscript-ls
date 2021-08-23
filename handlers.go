@@ -3,9 +3,7 @@ package main
 import (
 	"encoding/json"
 	"io/ioutil"
-	"os"
 
-	"github.com/antlr/antlr4/runtime/Go/antlr"
 	"github.com/numary/machine/script/compiler"
 	"github.com/numary/machine/script/parser"
 	"github.com/numary/numscript-ls/lsp"
@@ -35,13 +33,54 @@ var SUPPORTED_TOKEN_MODS []string = []string{
 	"deprecated",
 }
 
-func get_token_mod_field(name string) uint32 {
-	for i, n := range SUPPORTED_TOKEN_MODS {
-		if name == n {
-			return 1 << uint32(i)
-		}
+// func get_token_mod_field(name string) uint32 {
+// 	for i, n := range SUPPORTED_TOKEN_MODS {
+// 		if name == n {
+// 			return 1 << uint32(i)
+// 		}
+// 	}
+// 	return 0
+// }
+
+func compile(s *Server, uri lsp.DocumentURI, source string) {
+
+	artifacts := compiler.CompileFull(source)
+
+	Debug("%v", artifacts)
+
+	errors := artifacts.Errors
+
+	s.files[uri] = Document{
+		content: source,
+		tokens:  artifacts.Tokens,
+		errors:  errors,
 	}
-	return 0
+
+	if len(errors) > 0 {
+		diagnostics := make([]lsp.Diagnostic, len(errors))
+		for i, e := range errors {
+			diagnostics[i] = lsp.Diagnostic{
+				Range: lsp.Range{
+					Start: lsp.Position{
+						Line:      uint32(e.Startl - 1),
+						Character: uint32(e.Startc),
+					},
+					End: lsp.Position{
+						Line:      uint32(e.Endl - 1),
+						Character: uint32(e.Endc),
+					},
+				},
+				Severity: lsp.SeverityError,
+				Message:  e.Msg,
+			}
+
+			Debug("%v %v %v %v", e.Startl, e.Startc, e.Endl, e.Endc)
+		}
+		s.SendNotification("textDocument/publishDiagnostics", lsp.PublishDiagnosticsParams{
+			URI:         uri,
+			Diagnostics: diagnostics,
+		})
+	}
 }
 
 var handlers = map[string]func(*Server, *json.RawMessage) interface{}{
@@ -77,6 +116,10 @@ var handlers = map[string]func(*Server, *json.RawMessage) interface{}{
 		}
 	},
 
+	"shutdown": func(s *Server, pr *json.RawMessage) interface{} {
+		return map[string]struct{}{}
+	},
+
 	"textDocument/didOpen": func(s *Server, pr *json.RawMessage) interface{} {
 		var p lsp.DidOpenTextDocumentParams
 		json.Unmarshal([]byte(*pr), &p)
@@ -87,7 +130,7 @@ var handlers = map[string]func(*Server, *json.RawMessage) interface{}{
 			if err != nil {
 				panic("could not open file: " + err.Error())
 			}
-			s.files[uri] = string(text)
+			compile(s, uri, string(text))
 		}
 		return nil
 	},
@@ -96,8 +139,8 @@ var handlers = map[string]func(*Server, *json.RawMessage) interface{}{
 		var p lsp.DidChangeTextDocumentParams
 		json.Unmarshal([]byte(*pr), &p)
 		uri := p.TextDocument.URI
-		s.files[uri] = p.ContentChanges[len(p.ContentChanges)-1].Text
-		os.Stderr.WriteString(s.files[uri])
+		text := p.ContentChanges[len(p.ContentChanges)-1].Text
+		compile(s, uri, string(text))
 		return nil
 	},
 
@@ -105,22 +148,7 @@ var handlers = map[string]func(*Server, *json.RawMessage) interface{}{
 		var p lsp.SemanticTokensParams
 		json.Unmarshal([]byte(*pr), &p)
 		uri := p.TextDocument.URI
-		text, ok := s.files[uri]
-		if !ok {
-			return nil
-		}
-
-		elistener := &compiler.ErrorListener{}
-		is := antlr.NewInputStream(text)
-		lexer := parser.NewNumScriptLexer(is)
-		lexer.RemoveErrorListeners()
-		lexer.AddErrorListener(elistener)
-		stream := antlr.NewCommonTokenStream(lexer, antlr.LexerDefaultTokenChannel)
-		pars := parser.NewNumScriptParser(stream)
-		pars.RemoveErrorListeners()
-		pars.AddErrorListener(elistener)
-		pars.Script()
-		tokens := stream.GetAllTokens()
+		tokens := s.files[uri].tokens
 
 		out := []uint32{}
 		line := 1
@@ -137,8 +165,6 @@ var handlers = map[string]func(*Server, *json.RawMessage) interface{}{
 			} else {
 				delta_start = uint32(c)
 			}
-
-			Debug("Token: %-6s, DL: %v, DC: %v\n", token.GetText(), delta_line, delta_start)
 
 			var token_type uint32
 			switch token.GetTokenType() {
@@ -182,4 +208,8 @@ var handlers = map[string]func(*Server, *json.RawMessage) interface{}{
 			Data: out,
 		}
 	},
+}
+
+var notification_handlers = map[string]func(*Server, *json.RawMessage){
+	"initialized": func(s *Server, rm *json.RawMessage) {},
 }
