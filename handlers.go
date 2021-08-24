@@ -216,11 +216,26 @@ var handlers = map[string]func(*Server, *json.RawMessage) interface{}{
 					Kind:          lsp.SnippetCompletion,
 					Tags:          []lsp.CompletionItemTag{},
 					Detail:        "auto-fill send",
-					Documentation: "Send monetary value from a source to a destination",
+					Documentation: "Send monetary value from a source to a destination.",
 					InsertText: `send ${1:[CURRENCY 0]} (
 	source = $2
 	destination = $3
 )`,
+					InsertTextFormat:    lsp.SnippetTextFormat,
+					AdditionalTextEdits: []lsp.TextEdit{},
+					CommitCharacters:    []string{},
+					Command:             &lsp.Command{},
+					Data:                nil,
+				},
+				{
+					Label:         "vars!",
+					Kind:          lsp.SnippetCompletion,
+					Tags:          []lsp.CompletionItemTag{},
+					Detail:        "auto-fill vars",
+					Documentation: "Declare variables of the script.",
+					InsertText: `vars {
+	$1 $2
+}`,
 					InsertTextFormat:    lsp.SnippetTextFormat,
 					AdditionalTextEdits: []lsp.TextEdit{},
 					CommitCharacters:    []string{},
