@@ -32,7 +32,7 @@ func NewServer() Server {
 
 	go func() {
 		for res := range out {
-			Debug("RESPONSE: " + res + "\n")
+			// Debug("RESPONSE: " + res + "\n")
 			fmt.Printf("Content-Length: %v\r\n\r\n%v", len(res), res)
 		}
 	}()
@@ -67,9 +67,7 @@ func (s *Server) ReadRequest() jsonrpc2.Request {
 	if err != nil {
 		panic(err)
 	}
-
-	Debug("REQUEST: " + string(buf) + "\n\n")
-
+	// Debug("REQUEST: " + string(buf) + "\n\n")
 	var req jsonrpc2.Request
 	req.UnmarshalJSON(buf)
 	return req
@@ -92,7 +90,6 @@ func (s *Server) SendResponse(msg interface{}, id jsonrpc2.ID) {
 	if err != nil {
 		panic(fmt.Errorf("unable to marshal JSON response: %v", err))
 	}
-	Debug("RESPONSE: " + string(res_s) + "\n")
 	fmt.Printf("Content-Length: %v\r\n\r\n%v", len(res_s), string(res_s))
 }
 
@@ -112,7 +109,6 @@ func (s *Server) SendNotification(method string, params interface{}) {
 	if err != nil {
 		panic(fmt.Errorf("unable to marshal JSON response: %v", err))
 	}
-	Debug("RESPONSE: " + string(res_s) + "\n")
 	fmt.Printf("Content-Length: %v\r\n\r\n%v", len(res_s), string(res_s))
 }
 

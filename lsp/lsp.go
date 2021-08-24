@@ -4361,7 +4361,7 @@ type TextDocumentSyncOptions struct {
 	 * If present save notifications are sent to the server. If omitted the notification should not be
 	 * sent.
 	 */
-	Save SaveOptions/*boolean | SaveOptions*/ `json:"save,omitempty"`
+	Save *SaveOptions/*boolean | SaveOptions*/ `json:"save,omitempty"`
 }
 
 /**

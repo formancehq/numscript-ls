@@ -43,44 +43,34 @@ var SUPPORTED_TOKEN_MODS []string = []string{
 // }
 
 func compile(s *Server, uri lsp.DocumentURI, source string) {
-
 	artifacts := compiler.CompileFull(source)
-
-	Debug("%v", artifacts)
-
 	errors := artifacts.Errors
-
 	s.files[uri] = Document{
 		content: source,
 		tokens:  artifacts.Tokens,
 		errors:  errors,
 	}
-
-	if len(errors) > 0 {
-		diagnostics := make([]lsp.Diagnostic, len(errors))
-		for i, e := range errors {
-			diagnostics[i] = lsp.Diagnostic{
-				Range: lsp.Range{
-					Start: lsp.Position{
-						Line:      uint32(e.Startl - 1),
-						Character: uint32(e.Startc),
-					},
-					End: lsp.Position{
-						Line:      uint32(e.Endl - 1),
-						Character: uint32(e.Endc),
-					},
+	diagnostics := make([]lsp.Diagnostic, len(errors))
+	for i, e := range errors {
+		diagnostics[i] = lsp.Diagnostic{
+			Range: lsp.Range{
+				Start: lsp.Position{
+					Line:      uint32(e.Startl - 1),
+					Character: uint32(e.Startc),
 				},
-				Severity: lsp.SeverityError,
-				Message:  e.Msg,
-			}
-
-			Debug("%v %v %v %v", e.Startl, e.Startc, e.Endl, e.Endc)
+				End: lsp.Position{
+					Line:      uint32(e.Endl - 1),
+					Character: uint32(e.Endc),
+				},
+			},
+			Severity: lsp.SeverityError,
+			Message:  e.Msg,
 		}
-		s.SendNotification("textDocument/publishDiagnostics", lsp.PublishDiagnosticsParams{
-			URI:         uri,
-			Diagnostics: diagnostics,
-		})
 	}
+	s.SendNotification("textDocument/publishDiagnostics", lsp.PublishDiagnosticsParams{
+		URI:         uri,
+		Diagnostics: diagnostics,
+	})
 }
 
 var handlers = map[string]func(*Server, *json.RawMessage) interface{}{
@@ -92,14 +82,9 @@ var handlers = map[string]func(*Server, *json.RawMessage) interface{}{
 					Change:            lsp.Full,
 					WillSave:          false,
 					WillSaveWaitUntil: false,
-					Save: lsp.SaveOptions{
-						IncludeText: false,
-					},
 				},
 				SemanticTokensProvider: &lsp.SemanticTokensOptions{
-					WorkDoneProgressOptions: lsp.WorkDoneProgressOptions{
-						WorkDoneProgress: true,
-					},
+					WorkDoneProgressOptions: lsp.WorkDoneProgressOptions{},
 					Legend: lsp.SemanticTokensLegend{
 						TokenTypes:     SUPPORTED_TOKEN_TYPES,
 						TokenModifiers: SUPPORTED_TOKEN_MODS,
@@ -111,6 +96,12 @@ var handlers = map[string]func(*Server, *json.RawMessage) interface{}{
 						Full:                    nil,
 						WorkDoneProgressOptions: lsp.WorkDoneProgressOptions{},
 					},
+				},
+				CompletionProvider: &lsp.CompletionOptions{
+					TriggerCharacters:       []string{"s"},
+					AllCommitCharacters:     []string{},
+					ResolveProvider:         false,
+					WorkDoneProgressOptions: lsp.WorkDoneProgressOptions{},
 				},
 			},
 		}
@@ -172,7 +163,8 @@ var handlers = map[string]func(*Server, *json.RawMessage) interface{}{
 				parser.NumScriptLexerTY_ACCOUNT,
 				parser.NumScriptLexerTY_ASSET,
 				parser.NumScriptLexerTY_NUMBER,
-				parser.NumScriptLexerTY_MONETARY:
+				parser.NumScriptLexerTY_MONETARY,
+				parser.NumScriptLexerTY_PORTION:
 				token_type = get_token_idx("type")
 			case
 				parser.NumScriptLexerVARS,
@@ -208,8 +200,38 @@ var handlers = map[string]func(*Server, *json.RawMessage) interface{}{
 			Data: out,
 		}
 	},
+
+	"textDocument/completion": func(s *Server, pr *json.RawMessage) interface{} {
+		var p lsp.CompletionParams
+		json.Unmarshal([]byte(*pr), &p)
+		// uri := p.TextDocument.URI
+		// range := p.TextDocu
+		// pos := p.TextDocumentPositionParams.Position
+
+		return lsp.CompletionList{
+			IsIncomplete: false,
+			Items: []lsp.CompletionItem{
+				{
+					Label:         "send!",
+					Kind:          lsp.SnippetCompletion,
+					Tags:          []lsp.CompletionItemTag{},
+					Detail:        "auto-fill send",
+					Documentation: "Send monetary value from a source to a destination",
+					InsertText: `send ${1:[CURRENCY 0]} (
+	source = $2
+	destination = $3
+)`,
+					InsertTextFormat:    lsp.SnippetTextFormat,
+					AdditionalTextEdits: []lsp.TextEdit{},
+					CommitCharacters:    []string{},
+					Command:             &lsp.Command{},
+					Data:                nil,
+				},
+			},
+		}
+	},
 }
 
 var notification_handlers = map[string]func(*Server, *json.RawMessage){
-	"initialized": func(s *Server, rm *json.RawMessage) {},
+	"initialized": func(s *Server, pr *json.RawMessage) {},
 }
