@@ -21,9 +21,6 @@ jobs:
       - uses: actions/setup-go@v2
         with:
           go-version: '1.16'
-      - uses: actions/setup-python@v2
-        with:
-          python-version: '3.9'
       - uses: actions/checkout@v2
       - name: Configure git for private modules
         env:
@@ -39,8 +36,6 @@ jobs:
             ${{ runner.os }}-go-
       - name: get deps
         run: CGO_ENABLED=1 go get
-      - name: fetch numary control
-        run: make fetch-control
       - name: prepare goreleaser
         run: cp .github/.goreleaser.${{matrix.GOOS}}.yml .goreleaser.yml
       - name: Run GoReleaser
