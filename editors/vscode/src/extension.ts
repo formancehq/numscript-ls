@@ -1,6 +1,6 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { fetch } from 'node-fetch';
+import fetch from 'node-fetch';
 
 import * as lc from 'vscode-languageclient/node';
 
@@ -9,14 +9,13 @@ let dbg = vscode.window.createOutputChannel("Numscript Extension Output");
 let client: lc.LanguageClient;
 
 export async function fetchReleaseInfo(): Promise<GithubRelease> {
-  const requestUrl = "api.github.com/repos/numary/numscript-ls/releases/latest";
 
   const response = await fetch(
-      requestUrl,
-      {
-        headers: { Accept: "application/vnd.github.v3+json" }
-      }
-    );
+    "api.github.com/repos/numary/numscript-ls/releases/latest",
+    {
+      headers: { Accept: "application/vnd.github.v3+json" }
+    }
+  );
 
   if (!response.ok) {
       dbg.appendLine("Error fetching latest release info");
@@ -40,19 +39,21 @@ export interface GithubRelease {
 }
 
 async function downloadServer() {
-  let platforms = {
-    "x64 linux": "linux-x64",
-    "x64 darwin": "macos-x64",
-    "arm64 darwin": "macos-x64",
+  let platforms_binaries = {
+    "x64 linux": "Linux_x86_64.tar.gz",
+    "x64 darwin": "macos_x86_64.tar.gz",
+    "arm64 darwin": "macos_x86_64.tar.gz",
   }
 
-  let platform = platforms[`${process.arch} ${process.platform}`]
-  if (platform === "undefined") {
+  let asset_name = platforms_binaries[`${process.arch} ${process.platform}`]
+  if (asset_name === undefined) {
     await vscode.window.showErrorMessage(
       "Your platform does not have prebuilt language server binaries yet, " +
       "you have to clone numary/numscript-ls and build the server yourself, " +
       "then set the server path in the Numscript vscode extension's settings." 
     )
+  } else {
+    vscode.window.showInformationMessage("Your platform binary's name is: " + asset_name)
   }
 }
 

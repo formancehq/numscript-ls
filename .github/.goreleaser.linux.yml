@@ -8,7 +8,7 @@ builds:
       - linux
     goarch:
       - amd64
-    binary: numary
+    binary: numscript-ls
 archives:
   - replacements:
       linux: Linux
