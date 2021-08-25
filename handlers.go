@@ -234,7 +234,7 @@ var handlers = map[string]func(*Server, *json.RawMessage) interface{}{
 					Detail:        "auto-fill vars",
 					Documentation: "Declare variables of the script.",
 					InsertText: `vars {
-	$1 $2
+	$1 \$$2
 }`,
 					InsertTextFormat:    lsp.SnippetTextFormat,
 					AdditionalTextEdits: []lsp.TextEdit{},
