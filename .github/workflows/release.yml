@@ -56,15 +56,22 @@ jobs:
       - uses: bahmutov/npm-install@v1
         with:
           working-directory: editors/vscode
-      - name: compile
+      - name: Compile
         run: npm run compile
-      - name: install vsce
+      - name: Install vsce
         run: npm install -g vsce
-      - name: packages
+      - name: Package extension
         run: vsce package -o numscript.vsix
-      - name: upload asset
-        uses: JasonEtco/upload-to-release@master
-        with:
-          args: editors/vscode/numscript.vsix
+      - name: Get release
+        id: get_release
+        uses: bruceadams/get-release@v1.2.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload asset
+        uses: actions/upload-release-asset@v1.0.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.get_release.outputs.upload_url }}
+          asset_path: editors/vscode/numscript.vsix
+          asset_name: numscript-${{ steps.get_release.outputs.tag_name }}.vsix
