@@ -58,10 +58,10 @@ jobs:
           working-directory: editors/vscode
       - name: compile
         run: npm run compile
-      - name: package
-        uses: lannonbr/vsce-action@master
-        with:
-          args: "package -o numscript.vsix"
+      - name: install vsce
+        run: npm install -g vsce
+      - name: packages
+        run: vsce package -o numscript.vsix
       - name: upload asset
         uses: JasonEtco/upload-to-release@master
         with:
