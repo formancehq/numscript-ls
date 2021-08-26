@@ -53,9 +53,9 @@ jobs:
         working-directory: editors/vscode
     steps:
       - uses: actions/checkout@v2
-      - uses: ng-easy/npm-install@v1
-      - name: get deps
-        run: npm install
+      - uses: bahmutov/npm-install@v1
+        with:
+          working-directory: editors/vscode
       - name: compile
         run: npm run compile
       - name: package
