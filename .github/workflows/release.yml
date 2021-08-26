@@ -5,7 +5,7 @@ on:
 permissions:
   contents: write
 jobs:
-  build:
+  build-server:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -46,3 +46,23 @@ jobs:
         with:
           version: latest
           args: release --parallelism 2 --rm-dist --skip-validate
+  build-vscode:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: editors/vscode
+    steps:
+      - name: get deps
+        run: npm install
+      - name: compile
+        run: npm run compile
+      - name: package
+        uses: lannonbr/vsce-action@master
+        with:
+          args: "package -o numscript.vsix"
+      - name: upload asset
+        uses: JasonEtco/upload-to-release
+        with:
+          args: numscript.vsix
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
