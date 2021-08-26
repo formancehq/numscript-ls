@@ -61,7 +61,7 @@ jobs:
         with:
           args: "package -o numscript.vsix"
       - name: upload asset
-        uses: JasonEtco/upload-to-release@masters
+        uses: JasonEtco/upload-to-release@master
         with:
           args: numscript.vsix
         env:
