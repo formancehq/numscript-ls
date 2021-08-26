@@ -65,6 +65,6 @@ jobs:
       - name: upload asset
         uses: JasonEtco/upload-to-release@master
         with:
-          args: numscript.vsix
+          args: editors/vscode/numscript.vsix
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
