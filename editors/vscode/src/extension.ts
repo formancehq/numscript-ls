@@ -47,13 +47,13 @@ export interface GithubAsset {
 
 async function downloadServer(assets: Array<GithubAsset>, ctx: vscode.ExtensionContext): Promise<string> {
 	const platforms_binaries = {
-		"x64 linux": "numscript-ls_0.1.0_Linux_x86_64.tar.gz",
-		"x64 darwin": "numscript-ls_0.1.0_macos_x86_64.tar.gz",
-		"arm64 darwin": "numscript-ls_0.1.0_macos_x86_64.tar.gz",
+		"x64 linux": "Linux_x86_64",
+		"x64 darwin": "macos_x86_64",
+		"arm64 darwin": "macos_x86_64",
 	};
 
-	const asset_name = platforms_binaries[`${process.arch} ${process.platform}`];
-	if (asset_name === undefined) {
+	const platform = platforms_binaries[`${process.arch} ${process.platform}`];
+	if (platform === undefined) {
 		vscode.window.showErrorMessage(
 			"Your platform does not have prebuilt language server binaries yet, " +
 			"you'll have to clone numary/numscript-ls and build the server yourself, " +
@@ -62,13 +62,14 @@ async function downloadServer(assets: Array<GithubAsset>, ctx: vscode.ExtensionC
 		throw "no available binaries";
 	}
 
-	debug(assets.map(a => a.name.toString()).join(""))
+	let asset = assets.find(a => a.name.toString().includes(platform));
 
-	vscode.window.showInformationMessage("Your platform binary's name is: " + asset_name)
+	// debug(assets.map(a => a.name.toString()).join(" "));
+	// vscode.window.showInformationMessage("Your platform binary's name is: " + asset.name);
 
 	vscode.workspace.fs.createDirectory(ctx.globalStorageUri);
 	const globalStorage = path.parse(ctx.globalStorageUri.fsPath);
-	const res = await fetch(assets.find(a => a.name.toString() === asset_name).browser_download_url);
+	const res = await fetch(asset.browser_download_url);
 	if (!res.ok) {
 		throw new Error(`couldn't download file: got status code ${res.status}`);
 	}
@@ -76,12 +77,25 @@ async function downloadServer(assets: Array<GithubAsset>, ctx: vscode.ExtensionC
 	const totalBytes = Number(res.headers.get('content-length'));
 	debug(`Downloading server: ${totalBytes} bytes`);
 
-	let readBytes = 0;
-	res.body.on("data", (chunk: Buffer) => {
-		readBytes += chunk.length;
-		// onProgress(readBytes, totalBytes);
-		debug(`${readBytes} / ${totalBytes}`)
-	});
+	await vscode.window.withProgress(
+		{
+			location: vscode.ProgressLocation.Notification,
+			cancellable: false,
+			title: "Downloading...",
+		},
+		async (progress, _cancellationToken) => {
+			let readBytes = 0;
+			res.body.on("data", (chunk: Buffer) => {
+				readBytes += chunk.length;
+				let percentage = readBytes / totalBytes;
+				progress.report({
+					message: `${percentage}`,
+					increment: chunk.length / totalBytes
+				});
+				debug(`${readBytes} / ${totalBytes}`)
+			});
+		}
+	)
 
 	await util.promisify(pipeline)(res.body, zlib.createGunzip(), tar.extract(path.join(globalStorage.dir, globalStorage.base)));
 	return path.join(globalStorage.dir, globalStorage.base, "numscript-ls");
@@ -95,11 +109,12 @@ async function resolveServerPath(ctx: vscode.ExtensionContext): Promise<string> 
 
 	let releaseInfo = await fetchReleaseInfo();
 	let currentServerTimestamp = ctx.globalState.get("serverTimestamp");
-	debug(`${currentServerTimestamp} vs ${releaseInfo.published_at}`)
+	debug(`stored timestamp: ${currentServerTimestamp}\nlatest timestamp: ${releaseInfo.published_at}`)
 	if (currentServerTimestamp === releaseInfo.published_at) {
 		let serverPath = path.join(ctx.globalStorageUri.fsPath, "numscript-ls")
-		debug(serverPath)
-		return serverPath
+		if (fs.existsSync(serverPath)) {
+			return serverPath
+		}
 	}
 
 	let selection = await vscode.window
@@ -110,14 +125,11 @@ async function resolveServerPath(ctx: vscode.ExtensionContext): Promise<string> 
 
 	serverPath = await downloadServer(releaseInfo.assets, ctx);
 	ctx.globalState.update("serverTimestamp", releaseInfo.published_at)
-	debug(ctx.globalState["serverTimestamp"])
 	return serverPath
 }
 
 export async function activate(ctx: vscode.ExtensionContext) {
 	let serverPath = await resolveServerPath(ctx);
-
-	debug("finished resolving server path")
 
 	let run: lc.Executable = {
 		command: serverPath as string,
