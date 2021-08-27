@@ -1,8 +1,9 @@
 {
     "name": "numscript",
     "displayName": "Numscript",
-    "description": "Language support for Numscript",
-    "version": "0.0.1",
+    "description": "Language support for Numscript.",
+    "icon": "logo.png",
+    "version": "1.0.0",
     "publisher": "numary",
     "repository": {
         "type": "git",
