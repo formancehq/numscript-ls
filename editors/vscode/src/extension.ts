@@ -154,7 +154,7 @@ export async function activate(ctx: vscode.ExtensionContext) {
 
 	client.start();
 
-	const restartHandler = () => {
+	const restart = () => {
 		dbg.appendLine("Requested server restart")
 		client.stop().then(() => {
 			dbg.appendLine("Restarting")
@@ -162,7 +162,13 @@ export async function activate(ctx: vscode.ExtensionContext) {
 		})
 	};
 
-	ctx.subscriptions.push(vscode.commands.registerCommand("numscript.restart-server", restartHandler));
+	ctx.subscriptions.push(vscode.commands.registerCommand("numscript.restart-server", restart));
+	ctx.subscriptions.push(vscode.commands.registerCommand("numscript.download-server", () => {
+		fetchReleaseInfo().then(releaseInfo => {
+			downloadServer(releaseInfo.assets, ctx);
+			restart();
+		});
+	}));
 }
 
 export function deactivate(): Thenable<void> | undefined {

@@ -60,7 +60,12 @@
         "commands": [
             {
                 "command": "numscript.restart-server",
-                "title": "Restart Server",
+                "title": "Restart server",
+                "category": "Numscript"
+            },
+            {
+                "command": "numscript.download-server",
+                "title": "Download latest server",
                 "category": "Numscript"
             }
         ],
@@ -68,6 +73,10 @@
             "commandPalette": [
                 {
                     "command": "numscript.restart-server",
+                    "when": "editorLangId == numscript"
+                },
+                {
+                    "command": "numscript.download-server",
                     "when": "editorLangId == numscript"
                 }
             ]
