@@ -4,6 +4,10 @@
     "description": "Language support for Numscript",
     "version": "0.0.1",
     "publisher": "numary",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/microsoft/vscode-wordcount.git"
+    },
     "categories": [
         "Programming Languages"
     ],
@@ -23,6 +27,7 @@
         "@typescript-eslint/eslint-plugin": "^4.23.0",
         "@typescript-eslint/parser": "^4.23.0",
         "@vscode/test-electron": "^1.6.1",
+        "esbuild": "^0.12.23",
         "eslint": "^7.26.0",
         "mocha": "^8.3.2",
         "typescript": "^4.3.5"
@@ -30,11 +35,13 @@
     "activationEvents": [
         "onLanguage:numscript"
     ],
-    "main": "./out/extension",
+    "main": "./out/main",
     "scripts": {
-        "vscode:prepublish": "npm run compile",
-        "compile": "tsc -b",
-        "watch": "tsc -b -w"
+        "vscode:prepublish": "npm run esbuild-base -- --minify",
+        "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node",
+        "esbuild": "npm run esbuild-base -- --sourcemap",
+        "esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
+        "test-compile": "tsc -p ./"
     },
     "contributes": {
         "languages": [
