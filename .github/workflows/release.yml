@@ -57,7 +57,7 @@ jobs:
         with:
           working-directory: editors/vscode
       - name: Compile
-        run: npm run compile
+        run: npm run esbuild-base -- --minify
       - name: Install vsce
         run: npm install -g vsce
       - name: Package extension
