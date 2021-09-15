@@ -3,11 +3,15 @@
     "displayName": "Numscript",
     "description": "Language support for Numscript.",
     "icon": "logo.png",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "publisher": "numary",
+    "keywords": [
+        "numary",
+        "ledger"
+    ],
     "repository": {
         "type": "git",
-        "url": "https://github.com/microsoft/vscode-wordcount.git"
+        "url": "https://github.com/numary/numscript-ls"
     },
     "categories": [
         "Programming Languages"
