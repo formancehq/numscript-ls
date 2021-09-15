@@ -149,6 +149,8 @@ github.com/numary/ledger v0.0.0-20210702172952-a5bd30e551d0/go.mod h1:u2K28z9TDY
 github.com/numary/machine v0.0.0-20210702091459-23a82555adbf/go.mod h1:WAFvefAGYNjdDmPtDoZ305F58QDtUJyB0QWN3vzSZao=
 github.com/numary/machine v0.0.0-20210823205555-e209417df420 h1:Q/SrBb7023E+vyXrubNskJq2OnFcHfuUcBzEJKBUIOc=
 github.com/numary/machine v0.0.0-20210823205555-e209417df420/go.mod h1:KulcZIlMidEjXmuFSGNckmk0pKr4HFKFYy3bB+ksWSQ=
+github.com/numary/machine v0.0.0-20210831114934-e54c99840e08 h1:o7SZxAOdqsLMTanB3sURYeStnIaY4WYNM0THSGki8Sc=
+github.com/numary/machine v0.0.0-20210831114934-e54c99840e08/go.mod h1:KulcZIlMidEjXmuFSGNckmk0pKr4HFKFYy3bB+ksWSQ=
 github.com/oklog/ulid v1.3.1/go.mod h1:CirwcVhetQ6Lv90oh/F+FBtV6XMibvdAFo93nm5qn4U=
 github.com/pascaldekloe/goe v0.0.0-20180627143212-57f6aae5913c/go.mod h1:lzWF7FIEvWOWxwDKqyGYQf6ZUaNfKdP144TG7ZOy1lc=
 github.com/pelletier/go-toml v1.2.0/go.mod h1:5z9KED0ma1S8pY6P1sdut58dfprrGBbd/94hg7ilaic=
