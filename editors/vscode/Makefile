@@ -1,4 +1,4 @@
 build:
-	npm install
-	npm run compile
+	yarn install
+	yarn run compile
 	vsce package
