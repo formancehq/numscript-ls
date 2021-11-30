@@ -6,26 +6,12 @@ permissions:
   contents: write
 jobs:
   build-server:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [macos-latest, ubuntu-latest]
-        include:
-          - os: macos-latest
-            GOOS: darwin
-            GOARCH: amd64
-          - os: ubuntu-latest
-            GOOS: linux
-            GOARCH: amd64
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-go@v2
         with:
           go-version: '1.16'
       - uses: actions/checkout@v2
-      - name: Configure git for private modules
-        env:
-          TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-        run: git config --global url."https://altitude:${TOKEN}@github.com".insteadOf "https://github.com"
       - uses: actions/cache@v2
         with:
           path: |
@@ -35,12 +21,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
       - name: get deps
-        run: CGO_ENABLED=1 go get
-      - name: prepare goreleaser
-        run: cp .github/.goreleaser.${{matrix.GOOS}}.yml .goreleaser.yml
+        run: go mod download
       - name: Run GoReleaser
         env:
-          GOOS: ${{matrix.GOOS}}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: goreleaser/goreleaser-action@v2
         with:
@@ -53,26 +36,13 @@ jobs:
         working-directory: editors/vscode
     steps:
       - uses: actions/checkout@v2
-      - uses: bahmutov/npm-install@v1
+      - uses: actions/setup-node@v2
         with:
-          working-directory: editors/vscode
-      - name: Compile
-        run: npm run esbuild-base -- --minify
+          node-version: '14'
+      - run: yarn install
       - name: Install vsce
         run: npm install -g vsce
       - name: Package extension
-        run: vsce package -o numscript.vsix
-      - name: Get release
-        id: get_release
-        uses: bruceadams/get-release@v1.2.2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Upload asset
-        uses: actions/upload-release-asset@v1.0.2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.get_release.outputs.upload_url }}
-          asset_path: editors/vscode/numscript.vsix
-          asset_name: numscript-${{ steps.get_release.outputs.tag_name }}.vsix
-          asset_content_type: application/vsix
+        run: make build
+      - name: Publish
+        run: vsce publish -p ${{ secrets.VS_MARKETPLACE_TOKEN }}
