@@ -1,4 +1,4 @@
-project_name: numscript
+project_name: numscript-ls
 env:
   - GO111MODULE=on
   - GOPROXY=https://proxy.golang.org

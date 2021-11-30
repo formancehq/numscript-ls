@@ -47,9 +47,11 @@ export interface GithubAsset {
 
 async function downloadServer(assets: Array<GithubAsset>, ctx: vscode.ExtensionContext): Promise<string> {
 	const platforms_binaries = {
-		"x64 linux": "Linux_x86_64",
-		"x64 darwin": "macos_x86_64",
-		"arm64 darwin": "macos_x86_64",
+		"x64 windows": "Windows-64bit",
+		"x64 linux": "Linux-64bit",
+		"arm64 linux": "Linux-ARM64",
+		"x64 darwin": "macOS-64bit",
+		"arm64 darwin": "macOS-ARM64",
 	};
 
 	const platform = platforms_binaries[`${process.arch} ${process.platform}`];
