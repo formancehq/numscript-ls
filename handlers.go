@@ -187,7 +187,9 @@ var handlers = map[string]func(*Server, *json.RawMessage) interface{}{
 				parser.NumScriptLexerNUMBER,
 				parser.NumScriptLexerPORTION:
 				token_type = get_token_idx("number")
-			case parser.NumScriptLexerMETA:
+			case
+				parser.NumScriptLexerMETA,
+				parser.NumScriptLexerSET_TX_META:
 				token_type = get_token_idx("function")
 			default:
 				continue
@@ -241,6 +243,14 @@ var handlers = map[string]func(*Server, *json.RawMessage) interface{}{
 					CommitCharacters:    []string{},
 					Command:             &lsp.Command{},
 					Data:                nil,
+				},
+				{
+					Label:      "set_tx_meta!",
+					Kind:       lsp.SnippetCompletion,
+					Tags:       []lsp.CompletionItemTag{},
+					Command:    &lsp.Command{},
+					Detail:     "auto-fill set_tx_meta",
+					InsertText: `set_tx_meta("key", "value")`,
 				},
 			},
 		}
