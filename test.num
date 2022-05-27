@@ -1,0 +1,14 @@
+vars {
+  portion $fee
+}
+
+send [USD/2 100] (
+  source = @world
+  destination = {
+    $fee to @app:fees
+    remaining to @deposits:d18916
+  }
+)
+
+set_tx_meta("description", "user deposit")
+set_tx_meta("fee", $fee)
