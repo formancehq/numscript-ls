@@ -538,6 +538,10 @@ github.com/numary/machine v0.0.0-20210702091459-23a82555adbf/go.mod h1:WAFvefAGY
 github.com/numary/machine v0.0.0-20210831114934-e54c99840e08/go.mod h1:KulcZIlMidEjXmuFSGNckmk0pKr4HFKFYy3bB+ksWSQ=
 github.com/numary/machine v1.1.0 h1:tlHDnx4b9uQYGHNHhAwATILvLpxHlbFTgWbRVYQLgmw=
 github.com/numary/machine v1.1.0/go.mod h1:lSdeCwegoylxgHOl6wBC9BgOo2N35ra53aTsRybmJsc=
+github.com/numary/machine v1.1.1-0.20220527081210-d15fb855d757 h1:1jtTtv5Q94qbexuCkk921GfLyk0wNdH7d3swWt5FW4Y=
+github.com/numary/machine v1.1.1-0.20220527081210-d15fb855d757/go.mod h1:lSdeCwegoylxgHOl6wBC9BgOo2N35ra53aTsRybmJsc=
+github.com/numary/machine v1.1.1 h1:ESJJ7pCIzeMPS3V6esffIPBBiGXjKRdgB5aqfqND4FM=
+github.com/numary/machine v1.1.1/go.mod h1:lSdeCwegoylxgHOl6wBC9BgOo2N35ra53aTsRybmJsc=
 github.com/oklog/oklog v0.3.2/go.mod h1:FCV+B7mhrz4o+ueLpx+KqkyXRGMWOYEvfiXtdGtbWGs=
 github.com/oklog/run v1.0.0/go.mod h1:dlhp/R75TPv97u0XWUtDeV/lRKWPKSdTuV0TZvrmrQA=
 github.com/oklog/ulid v1.3.1/go.mod h1:CirwcVhetQ6Lv90oh/F+FBtV6XMibvdAFo93nm5qn4U=
