@@ -3,6 +3,9 @@ package main
 import (
 	"encoding/json"
 	"io/ioutil"
+	"net/url"
+	"runtime"
+	"strings"
 
 	"github.com/numary/machine/script/compiler"
 	"github.com/numary/machine/script/parser"
@@ -117,6 +120,14 @@ var handlers = map[string]func(*Server, *json.RawMessage) interface{}{
 		uri := p.TextDocument.URI
 		if uri[0:7] == "file://" {
 			path := string(uri[7:])
+			if runtime.GOOS == "windows" {
+				windowsFilePath, err := url.PathUnescape(path)
+				if err != nil {
+					panic("could not unescape file uri: " + err.Error())
+				}
+				windowsFilePath = strings.TrimPrefix(windowsFilePath, "/")
+				path = windowsFilePath
+			}
 			text, err := ioutil.ReadFile(path)
 			if err != nil {
 				panic("could not open file: " + err.Error())
