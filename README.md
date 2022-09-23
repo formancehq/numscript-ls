@@ -1,3 +1,3 @@
 # Numscript Language Server
 
-This repository contains the LSP server implementation for Numscript, as well client extensions for various editors.
+This repository contains the LSP implementation for Numscript, as well as client extensions for various editors.
